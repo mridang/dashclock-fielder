@@ -1,0 +1,9 @@
+<resources>
+
+	<string name="enabled">Enabled</string>
+	<string name="title">Near-field communication</string>
+    <string name="extension_name">Near-field Communication</string>
+    <string name="application_name">Dashclock Fielder Extension</string>
+    <string name="extension_info">Displays information about your near-field communication status.</string>
+
+</resources>
