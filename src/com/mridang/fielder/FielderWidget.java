@@ -2,19 +2,20 @@ package com.mridang.fielder;
 
 import java.util.Random;
 
+import org.acra.ACRA;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.nfc.NfcManager;
-import android.provider.Settings;
 import android.util.Log;
 
-import com.bugsense.trace.BugSenseHandler;
 import com.google.android.apps.dashclock.api.DashClockExtension;
 import com.google.android.apps.dashclock.api.ExtensionData;
 
@@ -32,10 +33,12 @@ public class FielderWidget extends DashClockExtension {
 	private class ToggleReceiver extends BroadcastReceiver {
 
 		/*
-		 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
+		 * @see
+		 * android.content.BroadcastReceiver#onReceive(android.content.Context,
+		 * android.content.Intent)
 		 */
 		@Override
-		public void onReceive(Context context, Intent intent) {
+		public void onReceive(Context ctxContext, Intent ittIntent) {
 
 			onUpdateData(0);
 
@@ -44,7 +47,9 @@ public class FielderWidget extends DashClockExtension {
 	}
 
 	/*
-	 * @see com.google.android.apps.dashclock.api.DashClockExtension#onInitialize(boolean)
+	 * @see
+	 * com.google.android.apps.dashclock.api.DashClockExtension#onInitialize
+	 * (boolean)
 	 */
 	@Override
 	protected void onInitialize(boolean booReconnect) {
@@ -77,7 +82,7 @@ public class FielderWidget extends DashClockExtension {
 
 		super.onCreate();
 		Log.d("FielderWidget", "Created");
-		BugSenseHandler.initAndStartSession(this, getString(R.string.bugsense));
+		ACRA.init(new AcraApplication(getApplicationContext()));
 
 	}
 
@@ -87,7 +92,7 @@ public class FielderWidget extends DashClockExtension {
 	 * (int)
 	 */
 	@Override
-	protected void onUpdateData(int arg0) {
+	protected void onUpdateData(int intReason) {
 
 		Log.d("FielderWidget", "Fetching near-field communcation information");
 		ExtensionData edtInformation = new ExtensionData();
@@ -100,7 +105,7 @@ public class FielderWidget extends DashClockExtension {
 
 			Log.d("FielderWidget", "Checking if the device supports near-field communication");
 			if (nfcManager != null && nfcManager.getDefaultAdapter() != null) {
-				
+
 				Log.d("FielderWidget", "Checking if near-field communication is enabled");
 				if (nfcManager.getDefaultAdapter().isEnabled()) {
 
@@ -108,7 +113,7 @@ public class FielderWidget extends DashClockExtension {
 					edtInformation.visible(true);
 					edtInformation.status(getString(R.string.title));
 					edtInformation.expandedBody(getString(R.string.enabled));
-					edtInformation.clickIntent(new Intent(Settings.ACTION_NFC_SETTINGS));
+					edtInformation.clickIntent(new Intent("android.settings.NFC_SETTINGS"));
 
 				} else {
 					Log.d("FielderWidget", "Near-field communication is enabled");
@@ -118,7 +123,7 @@ public class FielderWidget extends DashClockExtension {
 				Log.d("FielderWidget", "Device doesn't support near-field communication");
 			}
 
-			if (new Random().nextInt(5) == 0) {
+			if (new Random().nextInt(5) == 0 && !(0 != (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE))) {
 
 				PackageManager mgrPackages = getApplicationContext().getPackageManager();
 
@@ -129,22 +134,26 @@ public class FielderWidget extends DashClockExtension {
 				} catch (NameNotFoundException e) {
 
 					Integer intExtensions = 0;
-				    Intent ittFilter = new Intent("com.google.android.apps.dashclock.Extension");
-				    String strPackage;
+					Intent ittFilter = new Intent("com.google.android.apps.dashclock.Extension");
+					String strPackage;
 
-				    for (ResolveInfo info : mgrPackages.queryIntentServices(ittFilter, 0)) {
+					for (ResolveInfo info : mgrPackages.queryIntentServices(ittFilter, 0)) {
 
-				    	strPackage = info.serviceInfo.applicationInfo.packageName;
-						intExtensions = intExtensions + (strPackage.startsWith("com.mridang.") ? 1 : 0); 
+						strPackage = info.serviceInfo.applicationInfo.packageName;
+						intExtensions = intExtensions + (strPackage.startsWith("com.mridang.") ? 1 : 0);
 
 					}
 
 					if (intExtensions > 1) {
 
 						edtInformation.visible(true);
-						edtInformation.clickIntent(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("market://details?id=com.mridang.donate")));
+						edtInformation.clickIntent(new Intent(Intent.ACTION_VIEW).setData(Uri
+								.parse("market://details?id=com.mridang.donate")));
 						edtInformation.expandedTitle("Please consider a one time purchase to unlock.");
-						edtInformation.expandedBody("Thank you for using " + intExtensions + " extensions of mine. Click this to make a one-time purchase or use just one extension to make this disappear.");
+						edtInformation
+								.expandedBody("Thank you for using "
+										+ intExtensions
+										+ " extensions of mine. Click this to make a one-time purchase or use just one extension to make this disappear.");
 						setUpdateWhenScreenOn(true);
 
 					}
@@ -158,7 +167,7 @@ public class FielderWidget extends DashClockExtension {
 		} catch (Exception e) {
 			edtInformation.visible(false);
 			Log.e("FielderWidget", "Encountered an error", e);
-			BugSenseHandler.sendException(e);
+			ACRA.getErrorReporter().handleSilentException(e);
 		}
 
 		edtInformation.icon(R.drawable.ic_dashclock);
@@ -188,7 +197,6 @@ public class FielderWidget extends DashClockExtension {
 		}
 
 		Log.d("FielderWidget", "Destroyed");
-		BugSenseHandler.closeSession(this);
 
 	}
 
