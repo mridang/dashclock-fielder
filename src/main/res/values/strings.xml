@@ -1,6 +1,7 @@
 <resources>
 
-	<string name="enabled">Enabled</string>
+	<string name="beam_enabled">Android Beam is enabled and ready to transfer app content via NFC</string>
+    <string name="beam_disabled">Android Beam is disabled but can be enabled</string>
 	<string name="title">Near-field communication</string>
     <string name="extension_name">Near-field Communication</string>
     <string name="application_name">Dashclock Fielder Extension</string>
